@@ -1,3 +1,4 @@
+#include <global.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
@@ -6,7 +7,7 @@ int x_size = 320;
 int y_size = 240;
 int black = 0x0000;
 
-int pixel_buffer_start; // global variable
+
 short int Buffer1[240][512]; // 240 rows, 512 (320 + padding) columns
 short int Buffer2[240][512];
 
@@ -17,7 +18,8 @@ void plot_pixel(int x, int y, short int line_color);
 void draw_line(int x0, int y0, int x1, int y1, short int line_color);
 void clear_screen();
 void draw_box(int x0, int y0, short int box_color, int side_length);
-void draw_line_with_angle();
+void draw_line_with_angle(int x, int y, double angle, int length);
+double draw_hook(); //return slope of hook so harry can use
 
 int main(void){
     volatile int * pixel_ctrl_ptr = (int *)0xFF203020;   // pointer to the base register of controller
@@ -33,7 +35,11 @@ int main(void){
     return 0;
 }
 
-void draw_line_with_angle(){
+void draw_line_with_angle(int x, int y, double angle, int length){
+
+}
+
+double draw_hook(){
 
 }
 
