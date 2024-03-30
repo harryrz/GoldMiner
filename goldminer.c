@@ -112,15 +112,74 @@ void set_crystals( struct Crystal ** crystalList){
 
 void draw_crystals( struct Crystal ** crystalList){
     for(int i = 0; i < numCrystals; i++){
+        int x_start_loc = 20 + rand()%260;
+        int y_start_loc = 20 + rand()%180;
         if(crystalList[i]->shapeType == 1){ // Square Type
             crystalList[i]->pixel_size = 16;
             crystalList[i]->x_loc_list = (int *)malloc(crystalList[i]->pixel_size * sizeof(int));
             crystalList[i]->y_loc_list = (int *)malloc(crystalList[i]->pixel_size * sizeof(int));
-            crystalList[i]->x_loc_list[0] = 20 + rand()%260;
-            crystalList[i]->y_loc_list[0] = 20 + rand()%180;
+            int square_x_inc [16] = {0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3};
+            int square_y_inc [16] = {0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3};
+            for(int j = 0; j < crystalList[i]->pixel_size; j++){
+                crystalList[i]->x_loc_list[j] = x_start_loc + square_x_inc[j];
+                crystalList[i]->y_loc_list[j] = y_start_loc + square_y_inc[j];
+                printf("currently storing location x: ", crystalList[i]->x_loc_list[j], " , y: ", crystalList[i]->y_loc_list[j], ".\n");
+                plot_pixel(crystalList[i]->x_loc_list[j], crystalList[i]->y_loc_list[j], crystalList[i]->colour);
+            }
+        }
+        else if(crystalList[i]->shapeType == 2){ // Rectangle Type
+            crystalList[i]->pixel_size = 30;
+            crystalList[i]->x_loc_list = (int *)malloc(crystalList[i]->pixel_size * sizeof(int));
+            crystalList[i]->y_loc_list = (int *)malloc(crystalList[i]->pixel_size * sizeof(int));
+            int rectangle_x_inc [30] = {0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4};
+            int rectangle_y_inc [30] = {0, 1, 2, 3, 4, 5, 0, 1, 2, 3, 4, 5, 0, 1, 2, 3, 4, 5, 0, 1, 2, 3, 4, 5, 0, 1, 2, 3, 4, 5};
+            for(int j = 0; j < crystalList[i]->pixel_size; j++){
+                crystalList[i]->x_loc_list[j] = x_start_loc + rectangle_x_inc[j];
+                crystalList[i]->y_loc_list[j] = y_start_loc + rectangle_y_inc[j];
+                printf("currently storing location x: ", crystalList[i]->x_loc_list[j], " , y: ", crystalList[i]->y_loc_list[j], ".\n");
+                plot_pixel(crystalList[i]->x_loc_list[j], crystalList[i]->y_loc_list[j], crystalList[i]->colour);
+            }
+        } else if(crystalList[i]->shapeType == 3){ // Triangle Type:
+            crystalList[i]->pixel_size = 50;
+            crystalList[i]->x_loc_list = (int *)malloc(crystalList[i]->pixel_size * sizeof(int));
+            crystalList[i]->y_loc_list = (int *)malloc(crystalList[i]->pixel_size * sizeof(int));
+            int triangle_x_inc [50] = {0, 1, 2, 3, 4, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9,10,11,12,13,14, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9,
+            10,11,12,13,14,15,16,17,18,19};
+            int triangle_y_inc [50] = {0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
+            3, 3, 3, 3, 3, 3, 3, 3, 3, 3};
+            for(int j = 0; j < crystalList[i]->pixel_size; j++){
+                crystalList[i]->x_loc_list[j] = x_start_loc + triangle_x_inc[j];
+                crystalList[i]->y_loc_list[j] = y_start_loc + triangle_y_inc[j];
+                printf("currently storing location x: ", crystalList[i]->x_loc_list[j], " , y: ", crystalList[i]->y_loc_list[j], ".\n");
+                plot_pixel(crystalList[i]->x_loc_list[j], crystalList[i]->y_loc_list[j], crystalList[i]->colour);
+            }
 
-            
-
+        } else if(crystalList[i]->shapeType == 4){ //spike type
+            crystalList[i]->pixel_size = 60;
+            crystalList[i]->x_loc_list = (int *)malloc(crystalList[i]->pixel_size * sizeof(int));
+            crystalList[i]->y_loc_list = (int *)malloc(crystalList[i]->pixel_size * sizeof(int));
+            int spike_x_inc [60] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9,10,11,12,13,14,-1,-2,-3,-4,-5,-6,-7,-8,-9,-10,-11,-12,-13,-14,-15, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  0,  0,  0,  0,  0,  0};
+            int spike_y_inc [60] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  0,  0,  0,  0,  0,  0, 1, 2, 3, 4, 5, 6, 7, 8, 9,10,
+            11,12,13,14,15,-1,-2,-3,-4,-5,-6,-7,-8,-9,-10,-11,-12,-13,-14,-15};
+            for(int j = 0; j < crystalList[i]->pixel_size; j++){
+                crystalList[i]->x_loc_list[j] = x_start_loc + spike_x_inc[j];
+                crystalList[i]->y_loc_list[j] = y_start_loc + spike_y_inc[j];
+                printf("currently storing location x: ", crystalList[i]->x_loc_list[j], " , y: ", crystalList[i]->y_loc_list[j], ".\n");
+                plot_pixel(crystalList[i]->x_loc_list[j], crystalList[i]->y_loc_list[j], crystalList[i]->colour);
+            }
+        } else { //diamond
+            crystalList[i]->pixel_size = 60;
+            crystalList[i]->x_loc_list = (int *)malloc(crystalList[i]->pixel_size * sizeof(int));
+            crystalList[i]->y_loc_list = (int *)malloc(crystalList[i]->pixel_size * sizeof(int));
+            int diamond_x_inc [19] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 1, 2, 3, 4, 5, 6, 7, 8, 9};
+            int diamond_y_inc [19] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 2, 3, 4, 5, 4, 3, 2, 1};
+            for(int j = 0; j < crystalList[i]->pixel_size; j++){
+                crystalList[i]->x_loc_list[j] = x_start_loc + diamond_x_inc[j];
+                crystalList[i]->y_loc_list[j] = y_start_loc + diamond_y_inc[j];
+                printf("currently storing location x: ", crystalList[i]->x_loc_list[j], " , y: ", crystalList[i]->y_loc_list[j], ".\n");
+                plot_pixel(crystalList[i]->x_loc_list[j], crystalList[i]->y_loc_list[j], crystalList[i]->colour);
+            }
         }
     }
 }
