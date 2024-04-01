@@ -13,8 +13,8 @@ struct Crystal{
     int shapeType; // Type of the rock, denoted by an integet number: Diamond, Rock, Sapphire etc.
     short int colour; // Colour of the crystal
     int price; // Price of the crystal
-    int** x_loc_list; // Pointer to the start drawing location of the crystal
-    int** y_loc_list; // Pointer to the end drawing location of the crystal
+    int* x_loc_list; // Pointer to the start drawing location of the crystal
+    int* y_loc_list; // Pointer to the end drawing location of the crystal
     int pixel_size; // How many pixels do we want to draw for this crystal
 };
 

@@ -1,4 +1,4 @@
-#include <global.h>
+#include "global.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
@@ -21,19 +21,19 @@ void draw_box(int x0, int y0, short int box_color, int side_length);
 void draw_line_with_angle(int x, int y, double angle, int length);
 double draw_hook(); //return slope of hook so harry can use
 
-int main(void){
-    volatile int * pixel_ctrl_ptr = (int *)0xFF203020;   // pointer to the base register of controller
+// int main(void){
+//     volatile int * pixel_ctrl_ptr = (int *)0xFF203020;   // pointer to the base register of controller
 
-    /* The default base of the frame buffer is int VGA controller */
-   /* That default address is stored in the base register of the VGA controller port/interface*/
-   /* so the next statement gets it, leaving pixel_buffer_start = 0x08000000 */
+//     /* The default base of the frame buffer is int VGA controller */
+//    /* That default address is stored in the base register of the VGA controller port/interface*/
+//    /* so the next statement gets it, leaving pixel_buffer_start = 0x08000000 */
 
-    pixel_buffer_start = *pixel_ctrl_ptr;
+//     pixel_buffer_start = *pixel_ctrl_ptr;
 
-    clear_screen();
-    draw_box(150, 150, 0x07E0, 20);
-    return 0;
-}
+//     clear_screen();
+//     draw_box(150, 150, 0x07E0, 20);
+//     return 0;
+// }
 
 void draw_line_with_angle(int x, int y, double angle, int length){
 
