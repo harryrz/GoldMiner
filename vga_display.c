@@ -35,8 +35,8 @@ double draw_hook(); //return slope of hook so harry can use
 //     return 0;
 // }
 
-void draw_line_with_angle(int x, int y, double angle, int length){
-
+void draw_line_with_angle(int x, int y, double angle, int length){ //takes in angle in radians
+    
 }
 
 double draw_hook(){
