@@ -87,7 +87,7 @@ int main(void) {
 bool detect_hook_on_object(int hookx, int hooky, double slope){
     volatile short int * check_pixel_address;
     check_pixel_address = pixel_buffer_start + (hooky << 10) + (hookx << 1);
-    double slope = hookInfo.slope;
+    //double slope = hookInfo.slope;
     // We now check the pixel of the "soon to be drawn if not detected" hook head.
 
     // Algorithm: We check if the imaginary hook head is black or not,
@@ -406,7 +406,7 @@ void draw_hook(int* pushButtonBase){
 void extend_hook(){
     hookInfo.length = 35; // In case length of hook is modified elsewhere, change it back to 35
     int count = 0;
-    while(/*hook did not touch crystals at tip*/){ // no crystals detected at tip of hook
+    while(!detect_hook_on_object(hookInfo.hooktipX, hookInfo.hooktipY, hookInfo.slope)){ // no crystals detected at tip of hook
         draw_line_with_angle(160, 28, hookInfo.angle, hookInfo.length-1, true); //clear previous extended hook
         draw_line_with_angle(160, 28, hookInfo.angle, hookInfo.length, false); //draw extended hook
         hookInfo.length = hookInfo.length + 1;
