@@ -34,8 +34,10 @@ void clear_screen();
 void draw_box(int x0, int y0, short int box_color, int side_length);
 void draw_line_with_angle(int x, int y, double angle, int length, bool clear);
 void draw_hook(int* pushButtonBase); //return slope of hook so harry can use
+void draw_hookTip(bool clear);
 void extend_hook(); 
 void retract_hook();
+
 
 int main(void) {
 
@@ -364,7 +366,9 @@ void draw_line_with_angle(int x, int y, double angle, int length, bool clear){ /
 	x_diff = cos(rad_angle)*length;
 	x_final = x + x_diff;
 	y_final = y + y_diff;
-    hookInfo.hooktipX = x_final;
+    hookInfo.hooktipXPrev = hookInfo.hooktipX; //update previous position of hooktip
+    hookInfo.hooktipYPrev = hookInfo.hooktipY;
+    hookInfo.hooktipX = x_final; //update current position of hooktip
     hookInfo.hooktipY = y_final;
     hookInfo.slope = y_diff/x_diff;
 	draw_line(x, y, x_final, y_final, colour);
@@ -381,8 +385,10 @@ void draw_hook(int* pushButtonBase){
 			}
 			if(i != 0){
                 draw_line_with_angle(160, 28, i-1, 35, true); //clear previous hook
+                draw_hookTip(true); //clear previous hook
             }
 			draw_line_with_angle(160, 28, i, 35, false); //draw current hook
+            draw_hookTip(false);
             hookInfo.angle = i;
             wait_for_vsync();
         }
@@ -394,12 +400,32 @@ void draw_hook(int* pushButtonBase){
 			}
 			if(i != 180){
                 draw_line_with_angle(160, 28, i+1, 35, true); //clear previous hook
+                draw_hookTip(true); //clear previous hook
             }
 			draw_line_with_angle(160, 28, i, 35, false); //draw current hook
+            draw_hookTip(false);
             hookInfo.angle = i;
             wait_for_vsync();
         }
         swingCW = true;
+    }
+}
+
+void draw_hookTip(bool clear){ //draw a hook at the tip of the hook line
+    int xLoc = hookInfo.hooktipX;
+    int yLoc = hookInfo.hooktipY;
+    int xLocPrev = hookInfo.hooktipXPrev;
+    int yLocPrev = hookInfo.hooktipYPrev;
+    int x_change[15] = {0, 0, 0, 0, 0, -1, -2, -3, -4, -5, -6, -7, -8, -9, -10};
+    int y_change[15] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 9, 8, 7, 6, 5};
+    if(clear == true){
+        for(int i=0; i<15; i++){
+            plot_pixel(xLocPrev+x_change[i], yLocPrev+y_change[i], 0x0000); //draw black to clear previous hook tip
+        }
+    }else{
+        for(int i=0; i<15; i++){
+            plot_pixel(xLoc+x_change[i], yLoc+y_change[i], 0xdee5);
+        }
     }
 }
 
@@ -408,11 +434,13 @@ void extend_hook(){
     int count = 0;
     while(!detect_hook_on_object(hookInfo.hooktipX, hookInfo.hooktipY, hookInfo.slope)){ // no crystals detected at tip of hook
         draw_line_with_angle(160, 28, hookInfo.angle, hookInfo.length-1, true); //clear previous extended hook
+        draw_hookTip(true); //clear previous hook tip
         draw_line_with_angle(160, 28, hookInfo.angle, hookInfo.length, false); //draw extended hook
+        draw_hookTip(false); //draw current hooktip
         hookInfo.length = hookInfo.length + 1;
         count++;
         if(hookInfo.hooktipX>=319 || hookInfo.hooktipX<=0 || hookInfo.hooktipY<=0 ||hookInfo.hooktipY>=239){ //if reaches end of screen bounds, retract
-            retract_hook(hookInfo);
+            retract_hook();
             return;
         }
         wait_for_vsync();
@@ -425,8 +453,10 @@ void retract_hook(){
     while(hookInfo.length>=35){ //retract until hook's original length
         if(count!=0){
             draw_line_with_angle(160, 28, hookInfo.angle, hookInfo.length+1, true); //clear previous retracted hook
+            draw_hookTip(true); //clear previous hook tip
         }
         draw_line_with_angle(160, 28, hookInfo.angle, hookInfo.length, false); //draw retracted hook
+        draw_hookTip(false); //draw retracted hoop
         hookInfo.length = hookInfo.length - 1;
         count++;
         wait_for_vsync();
