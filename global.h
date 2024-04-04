@@ -18,6 +18,14 @@ struct Crystal{
     int pixel_size; // How many pixels do we want to draw for this crystal
 };
 
+struct hook{
+    int angle;
+    int length;
+    double slope;
+    int hooktipX;
+    int hooktipY;
+};
+
 short int colourList [10] = {0xa5b6, 0x9fb3, 0xc21e, 0x5d9d, 0x0540, 0xf925, 0xf3bd, 0x213d, 0xfda5, 0xffbe};
 // In order: Rock, Periodot, Amethyst, Aqua, Emerald, Ruby, Rose, Sapphire, Gold, Diamond
 

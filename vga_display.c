@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include <math.h>
 
 int x_size = 320;
 int y_size = 240;
@@ -36,7 +37,7 @@ double draw_hook(); //return slope of hook so harry can use
 // }
 
 void draw_line_with_angle(int x, int y, double angle, int length){ //takes in angle in radians
-    
+   
 }
 
 double draw_hook(){
