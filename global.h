@@ -31,6 +31,19 @@ short int colourList [10] = {0xa5b6, 0x9fb3, 0xc21e, 0x5d9d, 0x0540, 0xf925, 0xf
 
 int shapeList [10] = {1, 2, 3, 4, 5, 1, 2, 3, 4, 5};
 
+bool reset = false;
+
+int x_size = 320;
+int y_size = 240;
+int black = 0x0000;
+
+
+short int Buffer1[240][512]; // 240 rows, 512 (320 + padding) columns
+short int Buffer2[240][512];
+
+bool pushbutton = false;
+bool roundcomplete = false;
+
 
 
 
