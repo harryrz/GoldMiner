@@ -46,6 +46,8 @@ int y_size = 239;
 bool swingCW = true; //if the hook swings counter clockwise or not
 bool pbClicked = false; //if user clicks pushbutton, this bool will be set to true
 struct Crystal ** crystalList;
+
+int total_score; //keeps track of the total score in game
 	
 short int Buffer1[240][512]; // 240 rows, 512 (320 + padding) columns
 short int Buffer2[240][512];
@@ -70,11 +72,13 @@ bool detect_hook_on_object(int hookx, int hooky, double slope);
 struct Crystal* identify_the_crystal(int hookx, int hooky);
 void draw_retrieve_crystal_with_colour(short int colour);
 void retract_hook_with_object();
+void display_number(int x_start_loc, int y_start_loc, int number, short int colour);
+void display_score(int score);
 
 
 int main(void)
 {	
-	
+	total_score = 0;
     crystalList = (struct Crystal **)malloc(numCrystals * sizeof(struct Crystal *));
     for(int i = 0; i < numCrystals; i++){
         crystalList[i] = (struct Crystal *)malloc(sizeof(struct Crystal));
@@ -348,6 +352,7 @@ struct Crystal* identify_the_crystal(int hookx, int hooky){
 
 void retract_hook_with_object(){
     int count = 0;
+    total_score += curRetrieveCrystal->price;
     while(hookInfo.length>=35){ //retract until hook's original length
         if(count!=0){
             draw_line_with_angle(160, 28, hookInfo.angle, hookInfo.length+1, true); //clear previous retracted hook
@@ -363,6 +368,11 @@ void retract_hook_with_object(){
 				for(int i = 0; i < curRetrieveCrystal->pixel_size; i++){ // clear previous pixels
         		plot_pixel(curRetrieveCrystal->x_loc_list[i], curRetrieveCrystal->y_loc_list[i], 0x0000);
     			}
+                display_score(total_score);
+                // display_number(15, 15, 4, curRetrieveCrystal->colour);
+                // display_number(22, 15, 5, curRetrieveCrystal->colour);
+                // display_number(29, 15, 8, curRetrieveCrystal->colour);
+                // display_number(36, 15, 9, curRetrieveCrystal->colour);
 				curRetrieveCrystal->drawValid = false;
 			}
         }
@@ -376,7 +386,8 @@ void retract_hook_with_object(){
 	for(int i = 0; i < curRetrieveCrystal->pixel_size; i++){ // clear previous pixels
         		plot_pixel(curRetrieveCrystal->x_loc_list[i], curRetrieveCrystal->y_loc_list[i], 0x0000);
     			}
-				curRetrieveCrystal->drawValid = false;
+    display_score(total_score);
+	curRetrieveCrystal->drawValid = false;
 	hookInfo.length = 35; //reset hook length
 }
 
@@ -385,7 +396,7 @@ void set_crystals( struct Crystal ** crystalList){
         int crystal_index = rand()%10;
         crystalList[i]->colour = colourList[crystal_index];
         crystalList[i]->shapeType = shapeList[crystal_index];
-        crystalList[i]->price = crystal_index * 100 + (int)colourList[crystal_index];
+        crystalList[i]->price = crystal_index * 100;
 		crystalList[i]->x_start_loc = 20 + rand()%260;
 		crystalList[i]->y_start_loc = 40 + rand()%180;
         crystalList[i]->drawValid = true;
@@ -537,4 +548,105 @@ void draw_retrieve_crystal_with_colour(short int colour){
     }
 }
 
+void display_number(int x_start_loc, int y_start_loc, int number, short int colour){
+    if(number == 0){
+        draw_line(x_start_loc, y_start_loc, x_start_loc+4, y_start_loc, colour); //top segment
+        draw_line(x_start_loc, y_start_loc+1, x_start_loc, y_start_loc+4, colour); //left top segment
+        draw_line(x_start_loc, y_start_loc+5, x_start_loc, y_start_loc+7, colour);//left bottom segment
+        draw_line(x_start_loc+1, y_start_loc+4, x_start_loc+3, y_start_loc+4, 0x0000); //middle segment
+        draw_line(x_start_loc+4, y_start_loc+1, x_start_loc+4, y_start_loc+4, colour); //right top segment
+        draw_line(x_start_loc+4, y_start_loc+5, x_start_loc+4, y_start_loc+7, colour); //right bottom segment
+        draw_line(x_start_loc, y_start_loc+8, x_start_loc+4, y_start_loc+8, colour); //bottom segment
+    }else if(number == 1){
+        draw_line(x_start_loc, y_start_loc, x_start_loc+4, y_start_loc, 0x0000); //top segment
+        draw_line(x_start_loc, y_start_loc+1, x_start_loc, y_start_loc+4, 0x0000); //left top segment
+        draw_line(x_start_loc, y_start_loc+5, x_start_loc, y_start_loc+7, 0x0000);//left bottom segment
+        draw_line(x_start_loc+1, y_start_loc+4, x_start_loc+3, y_start_loc+4, 0x0000); //middle segment
+        draw_line(x_start_loc+4, y_start_loc, x_start_loc+4, y_start_loc+4, colour); //right top segment
+        draw_line(x_start_loc+4, y_start_loc+5, x_start_loc+4, y_start_loc+8, colour); //right bottom segment
+        draw_line(x_start_loc, y_start_loc+8, x_start_loc+4, y_start_loc+7, 0x0000); //bottom segment
+    }else if(number == 2){
+        draw_line(x_start_loc, y_start_loc, x_start_loc+4, y_start_loc, colour); //top segment
+        draw_line(x_start_loc, y_start_loc+1, x_start_loc, y_start_loc+4, 0x0000); //left top segment
+        draw_line(x_start_loc, y_start_loc+5, x_start_loc, y_start_loc+7, colour);//left bottom segment
+        draw_line(x_start_loc+1, y_start_loc+4, x_start_loc+3, y_start_loc+4, colour); //middle segment
+        draw_line(x_start_loc+4, y_start_loc+1, x_start_loc+4, y_start_loc+4, colour); //right top segment
+        draw_line(x_start_loc+4, y_start_loc+5, x_start_loc+4, y_start_loc+7, 0x0000); //right bottom segment
+        draw_line(x_start_loc, y_start_loc+8, x_start_loc+4, y_start_loc+8, colour); //bottom segment
+    } else if(number == 3){
+        draw_line(x_start_loc, y_start_loc, x_start_loc+4, y_start_loc, colour); //top segment
+        draw_line(x_start_loc, y_start_loc+1, x_start_loc, y_start_loc+4, 0x0000); //left top segment
+        draw_line(x_start_loc, y_start_loc+5, x_start_loc, y_start_loc+7, 0x0000);//left bottom segment
+        draw_line(x_start_loc+1, y_start_loc+4, x_start_loc+3, y_start_loc+4, colour); //middle segment
+        draw_line(x_start_loc+4, y_start_loc+1, x_start_loc+4, y_start_loc+4, colour); //right top segment
+        draw_line(x_start_loc+4, y_start_loc+5, x_start_loc+4, y_start_loc+7, colour); //right bottom segment
+        draw_line(x_start_loc, y_start_loc+8, x_start_loc+4, y_start_loc+8, colour); //bottom segment
+    } else if(number == 4){
+        draw_line(x_start_loc, y_start_loc, x_start_loc+4, y_start_loc, 0x0000); //top segment
+        draw_line(x_start_loc, y_start_loc, x_start_loc, y_start_loc+4, colour); //left top segment
+        draw_line(x_start_loc, y_start_loc+5, x_start_loc, y_start_loc+7, 0x0000);//left bottom segment
+        draw_line(x_start_loc+1, y_start_loc+4, x_start_loc+3, y_start_loc+4, colour); //middle segment
+        draw_line(x_start_loc+4, y_start_loc, x_start_loc+4, y_start_loc+4, colour); //right top segment
+        draw_line(x_start_loc+4, y_start_loc+5, x_start_loc+4, y_start_loc+8, colour); //right bottom segment
+        draw_line(x_start_loc, y_start_loc+8, x_start_loc+3, y_start_loc+7, 0x0000); //bottom segment
+    } else if(number == 5){
+        draw_line(x_start_loc, y_start_loc, x_start_loc+4, y_start_loc, colour); //top segment
+        draw_line(x_start_loc, y_start_loc+1, x_start_loc, y_start_loc+4, colour); //left top segment
+        draw_line(x_start_loc, y_start_loc+5, x_start_loc, y_start_loc+7, 0x0000);//left bottom segment
+        draw_line(x_start_loc+1, y_start_loc+4, x_start_loc+3, y_start_loc+4, colour); //middle segment
+        draw_line(x_start_loc+4, y_start_loc+1, x_start_loc+4, y_start_loc+4, 0x0000); //right top segment
+        draw_line(x_start_loc+4, y_start_loc+4, x_start_loc+4, y_start_loc+7, colour); //right bottom segment
+        draw_line(x_start_loc, y_start_loc+8, x_start_loc+4, y_start_loc+8, colour); //bottom segment
+    } else if(number == 6){
+        draw_line(x_start_loc, y_start_loc, x_start_loc+4, y_start_loc, colour); //top segment
+        draw_line(x_start_loc, y_start_loc+1, x_start_loc, y_start_loc+4, colour); //left top segment
+        draw_line(x_start_loc, y_start_loc+5, x_start_loc, y_start_loc+7, colour);//left bottom segment
+        draw_line(x_start_loc+1, y_start_loc+4, x_start_loc+3, y_start_loc+4, colour); //middle segment
+        draw_line(x_start_loc+4, y_start_loc+1, x_start_loc+4, y_start_loc+4, 0x0000); //right top segment
+        draw_line(x_start_loc+4, y_start_loc+4, x_start_loc+4, y_start_loc+7, colour); //right bottom segment
+        draw_line(x_start_loc, y_start_loc+8, x_start_loc+4, y_start_loc+8, colour); //bottom segment
+    } else if(number == 7){
+        draw_line(x_start_loc, y_start_loc, x_start_loc+4, y_start_loc, colour); //top segment
+        draw_line(x_start_loc, y_start_loc+1, x_start_loc, y_start_loc+4, 0x0000); //left top segment
+        draw_line(x_start_loc, y_start_loc+5, x_start_loc, y_start_loc+7, 0x0000);//left bottom segment
+        draw_line(x_start_loc+1, y_start_loc+4, x_start_loc+3, y_start_loc+4, 0x0000); //middle segment
+        draw_line(x_start_loc+4, y_start_loc+1, x_start_loc+4, y_start_loc+4, colour); //right top segment
+        draw_line(x_start_loc+4, y_start_loc+5, x_start_loc+4, y_start_loc+8, colour); //right bottom segment
+        draw_line(x_start_loc, y_start_loc+8, x_start_loc+3, y_start_loc+7, 0x0000); //bottom segment
+    } else if(number == 8){
+        draw_line(x_start_loc, y_start_loc, x_start_loc+4, y_start_loc, colour); //top segment
+        draw_line(x_start_loc, y_start_loc+1, x_start_loc, y_start_loc+4, colour); //left top segment
+        draw_line(x_start_loc, y_start_loc+5, x_start_loc, y_start_loc+7, colour);//left bottom segment
+        draw_line(x_start_loc+1, y_start_loc+4, x_start_loc+3, y_start_loc+4, colour); //middle segment
+        draw_line(x_start_loc+4, y_start_loc+1, x_start_loc+4, y_start_loc+4, colour); //right top segment
+        draw_line(x_start_loc+4, y_start_loc+5, x_start_loc+4, y_start_loc+7, colour); //right bottom segment
+        draw_line(x_start_loc, y_start_loc+8, x_start_loc+4, y_start_loc+8, colour); //bottom segment
+    } else if(number == 9){
+        draw_line(x_start_loc, y_start_loc, x_start_loc+4, y_start_loc, colour); //top segment
+        draw_line(x_start_loc, y_start_loc+1, x_start_loc, y_start_loc+4, colour); //left top segment
+        draw_line(x_start_loc, y_start_loc+5, x_start_loc, y_start_loc+7, 0x0000);//left bottom segment
+        draw_line(x_start_loc+1, y_start_loc+4, x_start_loc+3, y_start_loc+4, colour); //middle segment
+        draw_line(x_start_loc+4, y_start_loc+1, x_start_loc+4, y_start_loc+4, colour); //right top segment
+        draw_line(x_start_loc+4, y_start_loc+5, x_start_loc+4, y_start_loc+8, colour); //right bottom segment
+        draw_line(x_start_loc, y_start_loc+8, x_start_loc+3, y_start_loc+7, 0x0000); //bottom segment
+    }
+}
+
+void display_score(int score){
+    int thousand_residue = score % 1000;
+    int hundred_residue = score % 100;
+    int ten_residue = score % 10;
+    int thousand = (score - score%1000)/1000;
+    int hunnid = (score%1000 - score%100)/100;
+    int ten = (score%100 - score%10)/10;
+    printf("%d\n", score);
+    printf("%d\n", thousand);
+    printf("%d\n", hunnid);
+    printf("%d\n", ten);
+    printf("%d\n", ten_residue);
+    display_number(15, 15, thousand, curRetrieveCrystal->colour);
+    display_number(22, 15, hunnid, curRetrieveCrystal->colour);
+    display_number(29, 15, ten, curRetrieveCrystal->colour);
+    display_number(36, 15, ten_residue, curRetrieveCrystal->colour);
+}
 	
