@@ -22,6 +22,9 @@ struct Crystal{
     int pixel_size; // How many pixels do we want to draw for this crystal
 	int x_start_loc;
 	int y_start_loc;
+    double x_buffer;
+    double y_buffer;
+    bool drawValid;
 };
 
 short int colourList [10] = {0xa5b6, 0x9fb3, 0xc21e, 0x5d9d, 0x0540, 0xf925, 0xf3bd, 0x213d, 0xfda5, 0xffbe};
@@ -65,6 +68,8 @@ void set_crystals( struct Crystal ** crystalList);
 void draw_crystals( struct Crystal ** crystalList);
 bool detect_hook_on_object(int hookx, int hooky, double slope);
 struct Crystal* identify_the_crystal(int hookx, int hooky);
+void draw_retrieve_crystal_with_colour(short int colour);
+void retract_hook_with_object();
 
 
 int main(void)
@@ -310,7 +315,8 @@ void extend_hook(){
         }
         wait_for_vsync();
     }
-    retract_hook(); //if reaches this point, it means crystal detected, retract hook
+    retract_hook_with_object(); //if reaches this point, it means crystal detected, retract hook
+    return;
 }
 
 void retract_hook(){
@@ -345,13 +351,32 @@ void retract_hook_with_object(){
     while(hookInfo.length>=35){ //retract until hook's original length
         if(count!=0){
             draw_line_with_angle(160, 28, hookInfo.angle, hookInfo.length+1, true); //clear previous retracted hook
+            draw_hookTip(true); //clear previous hook tip
+            if(curRetrieveCrystal->x_start_loc>20 && curRetrieveCrystal->y_start_loc > 40){
+				draw_retrieve_crystal_with_colour(0x0000);
+				for(int i = 0; i < numCrystals; i++){
+					free(crystalList[i]->x_loc_list);
+					free(crystalList[i]->y_loc_list);
+                    }
+            	draw_crystals(crystalList);
+			} else {
+				for(int i = 0; i < curRetrieveCrystal->pixel_size; i++){ // clear previous pixels
+        		plot_pixel(curRetrieveCrystal->x_loc_list[i], curRetrieveCrystal->y_loc_list[i], 0x0000);
+    			}
+				curRetrieveCrystal->drawValid = false;
+			}
         }
         draw_line_with_angle(160, 28, hookInfo.angle, hookInfo.length, false); //draw retracted hook
+        draw_hookTip(false); //draw retracted hoop
         hookInfo.length = hookInfo.length - 1;
         count++;
         wait_for_vsync();
     }
 	draw_line_with_angle(160, 28, hookInfo.angle, 35, true); //clear
+	for(int i = 0; i < curRetrieveCrystal->pixel_size; i++){ // clear previous pixels
+        		plot_pixel(curRetrieveCrystal->x_loc_list[i], curRetrieveCrystal->y_loc_list[i], 0x0000);
+    			}
+				curRetrieveCrystal->drawValid = false;
 	hookInfo.length = 35; //reset hook length
 }
 
@@ -363,6 +388,7 @@ void set_crystals( struct Crystal ** crystalList){
         crystalList[i]->price = crystal_index * 100 + (int)colourList[crystal_index];
 		crystalList[i]->x_start_loc = 20 + rand()%260;
 		crystalList[i]->y_start_loc = 40 + rand()%180;
+        crystalList[i]->drawValid = true;
     }
 }
 
@@ -370,70 +396,75 @@ void draw_crystals( struct Crystal ** crystalList){
     for(int i = 0; i < numCrystals; i++){
         //int x_start_loc = 20 + rand()%260;
         //int y_start_loc = 40 + rand()%180;
-		int x_start_loc = crystalList[i]->x_start_loc;
-		int y_start_loc = crystalList[i]->y_start_loc;
-        if(crystalList[i]->shapeType == 1){ // Square Type
-            crystalList[i]->pixel_size = 36;
-            crystalList[i]->x_loc_list = (int *)malloc(crystalList[i]->pixel_size * sizeof(int));
-            crystalList[i]->y_loc_list = (int *)malloc(crystalList[i]->pixel_size * sizeof(int));
-            int square_x_inc [36] = {0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 5, 5, 5, 5, 5, 5};
-            int square_y_inc [36] = {0, 1, 2, 3, 4, 5, 0, 1, 2, 3, 4, 5, 0, 1, 2, 3, 4, 5, 0, 1, 2, 3, 4, 5, 0, 1, 2, 3, 4, 5, 0, 1, 2, 3, 4, 5};
-            for(int j = 0; j < crystalList[i]->pixel_size; j++){
-                crystalList[i]->x_loc_list[j] = x_start_loc + square_x_inc[j];
-                crystalList[i]->y_loc_list[j] = y_start_loc + square_y_inc[j];
-                plot_pixel(crystalList[i]->x_loc_list[j], crystalList[i]->y_loc_list[j], crystalList[i]->colour);
+            int x_start_loc = crystalList[i]->x_start_loc;
+            int y_start_loc = crystalList[i]->y_start_loc;
+            if(crystalList[i]->shapeType == 1){ // Square Type
+                crystalList[i]->pixel_size = 36;
+                crystalList[i]->x_loc_list = (int *)malloc(crystalList[i]->pixel_size * sizeof(int));
+                crystalList[i]->y_loc_list = (int *)malloc(crystalList[i]->pixel_size * sizeof(int));
+                int square_x_inc [36] = {0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 5, 5, 5, 5, 5, 5};
+                int square_y_inc [36] = {0, 1, 2, 3, 4, 5, 0, 1, 2, 3, 4, 5, 0, 1, 2, 3, 4, 5, 0, 1, 2, 3, 4, 5, 0, 1, 2, 3, 4, 5, 0, 1, 2, 3, 4, 5};
+                for(int j = 0; j < crystalList[i]->pixel_size; j++){
+                    crystalList[i]->x_loc_list[j] = x_start_loc + square_x_inc[j];
+                    crystalList[i]->y_loc_list[j] = y_start_loc + square_y_inc[j];
+					if(crystalList[i]->drawValid == true){
+                    plot_pixel(crystalList[i]->x_loc_list[j], crystalList[i]->y_loc_list[j], crystalList[i]->colour);}
+                }
             }
-        }
-        else if(crystalList[i]->shapeType == 2){ // Rectangle Type
-            crystalList[i]->pixel_size = 30;
-            crystalList[i]->x_loc_list = (int *)malloc(crystalList[i]->pixel_size * sizeof(int));
-            crystalList[i]->y_loc_list = (int *)malloc(crystalList[i]->pixel_size * sizeof(int));
-            int rectangle_x_inc [30] = {0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4};
-            int rectangle_y_inc [30] = {0, 1, 2, 3, 4, 5, 0, 1, 2, 3, 4, 5, 0, 1, 2, 3, 4, 5, 0, 1, 2, 3, 4, 5, 0, 1, 2, 3, 4, 5};
-            for(int j = 0; j < crystalList[i]->pixel_size; j++){
-                crystalList[i]->x_loc_list[j] = x_start_loc + rectangle_x_inc[j];
-                crystalList[i]->y_loc_list[j] = y_start_loc + rectangle_y_inc[j];
-                plot_pixel(crystalList[i]->x_loc_list[j], crystalList[i]->y_loc_list[j], crystalList[i]->colour);
-            }
-        } else if(crystalList[i]->shapeType == 3){ // Triangle Type:
-            crystalList[i]->pixel_size = 50;
-            crystalList[i]->x_loc_list = (int *)malloc(crystalList[i]->pixel_size * sizeof(int));
-            crystalList[i]->y_loc_list = (int *)malloc(crystalList[i]->pixel_size * sizeof(int));
-            int triangle_x_inc [50] = {0, 1, 2, 3, 4, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9,10,11,12,13,14, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9,
-            10,11,12,13,14,15,16,17,18,19};
-            int triangle_y_inc [50] = {0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
-            3, 3, 3, 3, 3, 3, 3, 3, 3, 3};
-            for(int j = 0; j < crystalList[i]->pixel_size; j++){
-                crystalList[i]->x_loc_list[j] = x_start_loc + triangle_x_inc[j];
-                crystalList[i]->y_loc_list[j] = y_start_loc + triangle_y_inc[j];
-                plot_pixel(crystalList[i]->x_loc_list[j], crystalList[i]->y_loc_list[j], crystalList[i]->colour);
-            }
+            else if(crystalList[i]->shapeType == 2){ // Rectangle Type
+                crystalList[i]->pixel_size = 30;
+                crystalList[i]->x_loc_list = (int *)malloc(crystalList[i]->pixel_size * sizeof(int));
+                crystalList[i]->y_loc_list = (int *)malloc(crystalList[i]->pixel_size * sizeof(int));
+                int rectangle_x_inc [30] = {0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4};
+                int rectangle_y_inc [30] = {0, 1, 2, 3, 4, 5, 0, 1, 2, 3, 4, 5, 0, 1, 2, 3, 4, 5, 0, 1, 2, 3, 4, 5, 0, 1, 2, 3, 4, 5};
+                for(int j = 0; j < crystalList[i]->pixel_size; j++){
+                    crystalList[i]->x_loc_list[j] = x_start_loc + rectangle_x_inc[j];
+                    crystalList[i]->y_loc_list[j] = y_start_loc + rectangle_y_inc[j];
+					if(crystalList[i]->drawValid == true){
+                    plot_pixel(crystalList[i]->x_loc_list[j], crystalList[i]->y_loc_list[j], crystalList[i]->colour);}
+                }
+            } else if(crystalList[i]->shapeType == 3){ // Triangle Type:
+                crystalList[i]->pixel_size = 50;
+                crystalList[i]->x_loc_list = (int *)malloc(crystalList[i]->pixel_size * sizeof(int));
+                crystalList[i]->y_loc_list = (int *)malloc(crystalList[i]->pixel_size * sizeof(int));
+                int triangle_x_inc [50] = {0, 1, 2, 3, 4, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9,10,11,12,13,14, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9,
+                10,11,12,13,14,15,16,17,18,19};
+                int triangle_y_inc [50] = {0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
+                3, 3, 3, 3, 3, 3, 3, 3, 3, 3};
+                for(int j = 0; j < crystalList[i]->pixel_size; j++){
+                    crystalList[i]->x_loc_list[j] = x_start_loc + triangle_x_inc[j];
+                    crystalList[i]->y_loc_list[j] = y_start_loc + triangle_y_inc[j];
+					if(crystalList[i]->drawValid == true){
+                    plot_pixel(crystalList[i]->x_loc_list[j], crystalList[i]->y_loc_list[j], crystalList[i]->colour);}
+                }
 
-        } else if(crystalList[i]->shapeType == 4){ //spike type
-            crystalList[i]->pixel_size = 60;
-            crystalList[i]->x_loc_list = (int *)malloc(crystalList[i]->pixel_size * sizeof(int));
-            crystalList[i]->y_loc_list = (int *)malloc(crystalList[i]->pixel_size * sizeof(int));
-            int spike_x_inc [60] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9,10,11,12,13,14,-1,-2,-3,-4,-5,-6,-7,-8,-9,-10,-11,-12,-13,-14,-15, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  0,  0,  0,  0,  0,  0};
-            int spike_y_inc [60] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  0,  0,  0,  0,  0,  0, 1, 2, 3, 4, 5, 6, 7, 8, 9,10,
-            11,12,13,14,15,-1,-2,-3,-4,-5,-6,-7,-8,-9,-10,-11,-12,-13,-14,-15};
-            for(int j = 0; j < crystalList[i]->pixel_size; j++){
-                crystalList[i]->x_loc_list[j] = x_start_loc + spike_x_inc[j];
-                crystalList[i]->y_loc_list[j] = y_start_loc + spike_y_inc[j];
-                plot_pixel(crystalList[i]->x_loc_list[j], crystalList[i]->y_loc_list[j], crystalList[i]->colour);
+            } else if(crystalList[i]->shapeType == 4){ //spike type
+                crystalList[i]->pixel_size = 60;
+                crystalList[i]->x_loc_list = (int *)malloc(crystalList[i]->pixel_size * sizeof(int));
+                crystalList[i]->y_loc_list = (int *)malloc(crystalList[i]->pixel_size * sizeof(int));
+                int spike_x_inc [60] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9,10,11,12,13,14,-1,-2,-3,-4,-5,-6,-7,-8,-9,-10,-11,-12,-13,-14,-15, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  0,  0,  0,  0,  0,  0};
+                int spike_y_inc [60] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  0,  0,  0,  0,  0,  0, 1, 2, 3, 4, 5, 6, 7, 8, 9,10,
+                11,12,13,14,15,-1,-2,-3,-4,-5,-6,-7,-8,-9,-10,-11,-12,-13,-14,-15};
+                for(int j = 0; j < crystalList[i]->pixel_size; j++){
+                    crystalList[i]->x_loc_list[j] = x_start_loc + spike_x_inc[j];
+                    crystalList[i]->y_loc_list[j] = y_start_loc + spike_y_inc[j];
+					if(crystalList[i]->drawValid == true){
+                    plot_pixel(crystalList[i]->x_loc_list[j], crystalList[i]->y_loc_list[j], crystalList[i]->colour);}
+                }
+            } else { //diamond
+                crystalList[i]->pixel_size = 19;
+                crystalList[i]->x_loc_list = (int *)malloc(crystalList[i]->pixel_size * sizeof(int));
+                crystalList[i]->y_loc_list = (int *)malloc(crystalList[i]->pixel_size * sizeof(int));
+                int diamond_x_inc [19] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 1, 2, 3, 4, 5, 6, 7, 8, 9};
+                int diamond_y_inc [19] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 2, 3, 4, 5, 4, 3, 2, 1};
+                for(int j = 0; j < crystalList[i]->pixel_size; j++){
+                    crystalList[i]->x_loc_list[j] = x_start_loc + diamond_x_inc[j];
+                    crystalList[i]->y_loc_list[j] = y_start_loc + diamond_y_inc[j];
+					if(crystalList[i]->drawValid == true){
+                    plot_pixel(crystalList[i]->x_loc_list[j], crystalList[i]->y_loc_list[j], crystalList[i]->colour);}
+                }
             }
-        } else { //diamond
-            crystalList[i]->pixel_size = 19;
-            crystalList[i]->x_loc_list = (int *)malloc(crystalList[i]->pixel_size * sizeof(int));
-            crystalList[i]->y_loc_list = (int *)malloc(crystalList[i]->pixel_size * sizeof(int));
-            int diamond_x_inc [19] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 1, 2, 3, 4, 5, 6, 7, 8, 9};
-            int diamond_y_inc [19] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 2, 3, 4, 5, 4, 3, 2, 1};
-            for(int j = 0; j < crystalList[i]->pixel_size; j++){
-                crystalList[i]->x_loc_list[j] = x_start_loc + diamond_x_inc[j];
-                crystalList[i]->y_loc_list[j] = y_start_loc + diamond_y_inc[j];
-                plot_pixel(crystalList[i]->x_loc_list[j], crystalList[i]->y_loc_list[j], crystalList[i]->colour);
-            }
-        }
     }
 }
 
@@ -480,3 +511,30 @@ bool detect_hook_on_object(int hookx, int hooky, double slope){
    }
 }
 
+void draw_retrieve_crystal_with_colour(short int colour){
+    for(int i = 0; i < curRetrieveCrystal->pixel_size; i++){ // clear previous pixels
+        plot_pixel(curRetrieveCrystal->x_loc_list[i], curRetrieveCrystal->y_loc_list[i], colour);
+    }
+    //Set movement heuristics
+    curRetrieveCrystal->x_buffer = (double)curRetrieveCrystal->x_start_loc;
+    curRetrieveCrystal->y_buffer = (double)curRetrieveCrystal->y_start_loc;
+    if(0 < hookInfo.slope && hookInfo.slope < 1){
+        curRetrieveCrystal->x_start_loc -= 1;
+        curRetrieveCrystal->y_buffer -= hookInfo.slope;
+        curRetrieveCrystal->y_start_loc = (int)round(curRetrieveCrystal->y_buffer);
+    } else if(hookInfo.slope >= 1){
+        curRetrieveCrystal->y_start_loc -= 1;
+        curRetrieveCrystal->x_buffer -= hookInfo.slope;
+        curRetrieveCrystal->x_start_loc = (int)round(curRetrieveCrystal->x_buffer);
+    } else if(hookInfo.slope < 0 && hookInfo.slope > -1){
+        curRetrieveCrystal->x_start_loc += 1;
+        curRetrieveCrystal->y_buffer += hookInfo.slope;
+        curRetrieveCrystal->y_start_loc = (int)round(curRetrieveCrystal->y_buffer);
+    } else{
+        curRetrieveCrystal->y_start_loc -= 1;
+        curRetrieveCrystal->x_buffer -= hookInfo.slope;
+        curRetrieveCrystal->x_start_loc = (int)round(curRetrieveCrystal->x_buffer);
+    }
+}
+
+	
