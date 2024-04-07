@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
 #include <math.h>
@@ -33,7 +34,6 @@ short int colourList [10] = {0xa5b6, 0x9fb3, 0xc21e, 0x5d9d, 0x0540, 0xf925, 0xf
 int shapeList [10] = {1, 2, 3, 4, 5, 1, 2, 3, 4, 5};
 
 #define numCrystals 15 // Defines how many crystals we want to render on the picture.
-#define M_PI 3.14159265358979
 
 struct Crystal * curRetrieveCrystal; // Is the current crystal being retrieved.
 
@@ -44,11 +44,11 @@ int pixel_buffer_start;
 int x_size = 319;
 int y_size = 239;
 bool swingCW = true; //if the hook swings counter clockwise or not
-bool pbClicked = false; //if user clicks pushbutton, this bool will be set to true
 struct Crystal ** crystalList;
 
 int total_score; //keeps track of the total score in game
-	
+int life_amount; //amount of life
+
 short int Buffer1[240][512]; // 240 rows, 512 (320 + padding) columns
 short int Buffer2[240][512];
 	
@@ -59,12 +59,11 @@ void plot_pixel(int x, int y, short int line_color);
 void swap(int* x, int* y);
 void draw_box(int x0, int y0, short int box_color, int side_length);
 void draw_line_with_angle(int x, int y, double angle, int length, bool clear);
-void draw_hook(int* pushButtonBase);
+void draw_hook(volatile int* pushButtonBase);
 void draw_hookTip(bool clear);
 void extend_hook(); 
 void retract_hook();
-
-
+void display_life();
 
 void set_crystals( struct Crystal ** crystalList);
 void draw_crystals( struct Crystal ** crystalList);
@@ -79,6 +78,7 @@ void display_score(int score, short int colour);
 int main(void)
 {	
 	total_score = 0;
+    life_amount = 10;
     crystalList = (struct Crystal **)malloc(numCrystals * sizeof(struct Crystal *));
     for(int i = 0; i < numCrystals; i++){
         crystalList[i] = (struct Crystal *)malloc(sizeof(struct Crystal));
@@ -87,7 +87,9 @@ int main(void)
 
     set_crystals(crystalList); // This populates the crystalList array with random parameters
 	
-	
+    //setup led
+	volatile int* LED = (int*) 0xFF200000;
+    *(LED) = 0b1111111111; 
 	volatile int * pixel_ctrl_ptr = (int *)0xFF203020;
     // declare other variables(not shown)
     // initialize location and direction of rectangles(not shown)
@@ -110,25 +112,21 @@ int main(void)
 	hookInfo.angle = 0;
 	hookInfo.length = 35;
 	
-    while(1){ 
+    while(life_amount>0){ 
 		draw_crystals(crystalList);
-        if(*(pushButtonBase+3) == 1){ //some button is pushed, set pbClicked to true;
-            pbClicked = true;
-        }
 
-        if(pbClicked == false){ //hook keeps swings if user not clicking pushbutton
+        if(*(pushButtonBase+3) == 0){ //hook keeps swings if user not clicking pushbutton
             draw_hook(pushButtonBase);
         }else{ //push button clicked, extend hook
             extend_hook();
-			*(pushButtonBase+3) = 1; // reset edgecap bit
-        	pbClicked = false; //reset pbClicked
+			*(pushButtonBase+3) = *(pushButtonBase+3); // reset edgecap bit
         }
 
         
         wait_for_vsync(); // swap front and back buffers on VGA vertical sync
         pixel_buffer_start = *(pixel_ctrl_ptr + 1); // new back buffer
     }
-    
+    printf("Game Ends!!!");
 }
 
 // code not shown for clear_screen() and draw_line() subroutines
@@ -248,7 +246,7 @@ void draw_line_with_angle(int x, int y, double angle, int length, bool clear){ /
 	draw_line(x, y, x_final, y_final, colour);
 }
 
-void draw_hook(int* pushButtonBase){
+void draw_hook(volatile int* pushButtonBase){
     draw_box(160, 20, 0x808080, 16); //draw box in grey colour, acts as hook base
     hookInfo.length = 35;
     //hook swings clockwise
@@ -313,7 +311,8 @@ void extend_hook(){
         draw_hookTip(false); //draw current hooktip
         hookInfo.length = hookInfo.length + 1;
         count++;
-        if(hookInfo.hooktipX>=319 || hookInfo.hooktipX<=0 || hookInfo.hooktipY<=0 ||hookInfo.hooktipY>=239){ //if reaches end of screen bounds, retract
+        if(hookInfo.hooktipX-5>=319 || hookInfo.hooktipX-5<=0 || hookInfo.hooktipY+10>=238){ //if reaches end of screen bounds, retract
+            life_amount--;
             retract_hook();
             return;
         }
@@ -324,6 +323,7 @@ void extend_hook(){
 }
 
 void retract_hook(){
+    display_life();
     int count = 0;
     while(hookInfo.length>=35){ //retract until hook's original length
         if(count!=0){
@@ -338,6 +338,15 @@ void retract_hook(){
     }
 	draw_line_with_angle(160, 28, hookInfo.angle, 35, true); //clear
 	hookInfo.length = 35; //reset hook length
+}
+
+void display_life(){
+    volatile int* LED = (int*) 0xFF200000;
+    int binaryLife = 0b1111111111;
+    if(life_amount>=0){
+        *(LED) = (binaryLife>>10-life_amount);
+    }
+    printf("Life amount: %d\n", life_amount);
 }
 
 struct Crystal* identify_the_crystal(int hookx, int hooky){
