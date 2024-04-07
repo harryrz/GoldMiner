@@ -52,6 +52,11 @@ int life_amount; //amount of life
 short int Buffer1[240][512]; // 240 rows, 512 (320 + padding) columns
 short int Buffer2[240][512];
 
+void intialPageState(); //displays initial page before game starts
+void playGameState(struct Crystal ** crystalList, volatile int * pushButtonBase); //actual game, terminates when life=0 or score reaches
+void endGameState();
+
+
 short int background[320][240];
 	
 void clear_screen();
@@ -115,24 +120,45 @@ int main(void)
 	hookInfo.angle = 0;
 	hookInfo.length = 35;
 	
-    //render_background();
-    while(life_amount>0){ 
-        //render_background();
-		draw_crystals(crystalList);
-
-        if(*(pushButtonBase+3) == 0){ //hook keeps swings if user not clicking pushbutton
-            draw_hook(pushButtonBase);
-        }else{ //push button clicked, extend hook
-            extend_hook();
-			*(pushButtonBase+3) = *(pushButtonBase+3); // reset edgecap bit
+    //check if fourth push button clicked, if yes, start game
+    initialPageState(); //display initial page
+    while(1){ //loop until fourth button clicked
+        if((*(pushButtonBase+3)>>3)%2 == 1){
+            *(pushButtonBase+3) = *(pushButtonBase+3);
+            break; //go to gnme screen
         }
-
+    }
+    while(life_amount>0){  //keep playing game if life greater than 0
+        playGameState(crystalList, pushButtonBase);
         
         wait_for_vsync(); // swap front and back buffers on VGA vertical sync
         pixel_buffer_start = *(pixel_ctrl_ptr + 1); // new back buffer
     }
-    printf("Game Ends!!!");
+    endGameState(){ //display end game state
+        printf("Game Ends!!!");
+    }
 }
+
+void initialPageState(){
+    //draw intro page here
+
+}
+
+void playGameState(struct Crystal ** crystalList, volatile int * pushButtonBase){
+    draw_crystals(crystalList);
+
+    if(*(pushButtonBase+3) == 0){ //hook keeps swings if user not clicking pushbutton
+        draw_hook(pushButtonBase);
+    }else{ //push button clicked, extend hook
+        extend_hook();
+		*(pushButtonBase+3) = *(pushButtonBase+3); // reset edgecap bit
+    }
+}
+
+void endGameState(){
+    //draw outro page here
+}
+
 
 // code not shown for clear_screen() and draw_line() subroutines
 void clear_screen(){
@@ -719,7 +745,6 @@ void display_score(int score, short int colour){
     display_number(29, 15, ten, colour);
     display_number(36, 15, ten_residue, colour);
 }
-
 void render_background(){
     for(int col = 0; col < 239; col++){
         if(col <= 27){
