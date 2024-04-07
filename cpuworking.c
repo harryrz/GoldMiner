@@ -306,7 +306,7 @@ void draw_hookTip(bool clear){ //draw a hook at the tip of the hook line
 void extend_hook(){
     hookInfo.length = 35; // In case length of hook is modified elsewhere, change it back to 35
     int count = 0;
-    while(!detect_hook_on_object(hookInfo.hooktipX, hookInfo.hooktipY, hookInfo.slope)){ // no crystals detected at tip of hook
+    while(!detect_hook_on_object(hookInfo.hooktipX-5, hookInfo.hooktipY+10, hookInfo.slope)){ // no crystals detected at tip of hook
         draw_line_with_angle(160, 28, hookInfo.angle, hookInfo.length-1, true); //clear previous extended hook
         draw_hookTip(true); //clear previous hook tip
         draw_line_with_angle(160, 28, hookInfo.angle, hookInfo.length, false); //draw extended hook
@@ -388,6 +388,7 @@ void retract_hook_with_object(){
     			}
     display_score(total_score);
 	curRetrieveCrystal->drawValid = false;
+				curRetrieveCrystal->drawValid = false;
 	hookInfo.length = 35; //reset hook length
 }
 
