@@ -73,7 +73,7 @@ struct Crystal* identify_the_crystal(int hookx, int hooky);
 void draw_retrieve_crystal_with_colour(short int colour);
 void retract_hook_with_object();
 void display_number(int x_start_loc, int y_start_loc, int number, short int colour);
-void display_score(int score);
+void display_score(int score, short int colour);
 
 
 int main(void)
@@ -352,6 +352,7 @@ struct Crystal* identify_the_crystal(int hookx, int hooky){
 
 void retract_hook_with_object(){
     int count = 0;
+    display_score(total_score, 0x0000);//first clear the score bits
     total_score += curRetrieveCrystal->price;
     while(hookInfo.length>=35){ //retract until hook's original length
         if(count!=0){
@@ -368,11 +369,7 @@ void retract_hook_with_object(){
 				for(int i = 0; i < curRetrieveCrystal->pixel_size; i++){ // clear previous pixels
         		plot_pixel(curRetrieveCrystal->x_loc_list[i], curRetrieveCrystal->y_loc_list[i], 0x0000);
     			}
-                display_score(total_score);
-                // display_number(15, 15, 4, curRetrieveCrystal->colour);
-                // display_number(22, 15, 5, curRetrieveCrystal->colour);
-                // display_number(29, 15, 8, curRetrieveCrystal->colour);
-                // display_number(36, 15, 9, curRetrieveCrystal->colour);
+                display_score(total_score, curRetrieveCrystal->colour);
 				curRetrieveCrystal->drawValid = false;
 			}
         }
@@ -386,7 +383,7 @@ void retract_hook_with_object(){
 	for(int i = 0; i < curRetrieveCrystal->pixel_size; i++){ // clear previous pixels
         		plot_pixel(curRetrieveCrystal->x_loc_list[i], curRetrieveCrystal->y_loc_list[i], 0x0000);
     			}
-    display_score(total_score);
+    display_score(total_score, curRetrieveCrystal->colour);
 	curRetrieveCrystal->drawValid = false;
 				curRetrieveCrystal->drawValid = false;
 	hookInfo.length = 35; //reset hook length
@@ -633,21 +630,21 @@ void display_number(int x_start_loc, int y_start_loc, int number, short int colo
     }
 }
 
-void display_score(int score){
+void display_score(int score, short int colour){
     int thousand_residue = score % 1000;
     int hundred_residue = score % 100;
     int ten_residue = score % 10;
     int thousand = (score - score%1000)/1000;
     int hunnid = (score%1000 - score%100)/100;
     int ten = (score%100 - score%10)/10;
-    printf("%d\n", score);
-    printf("%d\n", thousand);
-    printf("%d\n", hunnid);
-    printf("%d\n", ten);
-    printf("%d\n", ten_residue);
-    display_number(15, 15, thousand, curRetrieveCrystal->colour);
-    display_number(22, 15, hunnid, curRetrieveCrystal->colour);
-    display_number(29, 15, ten, curRetrieveCrystal->colour);
-    display_number(36, 15, ten_residue, curRetrieveCrystal->colour);
+    // printf("%d\n", score);
+    // printf("%d\n", thousand);
+    // printf("%d\n", hunnid);
+    // printf("%d\n", ten);
+    // printf("%d\n", ten_residue);
+    display_number(15, 15, thousand, colour);
+    display_number(22, 15, hunnid, colour);
+    display_number(29, 15, ten, colour);
+    display_number(36, 15, ten_residue, colour);
 }
 	
