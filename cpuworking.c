@@ -9735,6 +9735,7 @@ int main(void)
     //check if fourth push button clicked, if yes, start game
     
     while(1){
+        life_amount=5;
         while(1){ //loop until fourth button clicked
             initialPageState(); //display initial page
             if((*(pushButtonBase+3)>>3)%2 == 1){
@@ -9915,6 +9916,10 @@ void draw_line_with_angle(int x, int y, double angle, int length, bool clear){ /
     hookInfo.hooktipY = y_final;
     hookInfo.slope = d_y_diff/d_x_diff;
 	draw_line(x, y, x_final, y_final, colour);
+}
+
+void draw_oldMan(){
+
 }
 
 void draw_hook(volatile int* pushButtonBase){
