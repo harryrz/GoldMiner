@@ -73,6 +73,7 @@ void draw_hookTip(bool clear);
 void extend_hook(); 
 void retract_hook();
 void display_life();
+void draw_oldMan();
 
 void set_crystals( struct Crystal ** crystalList);
 void draw_crystals( struct Crystal ** crystalList);
@@ -9754,7 +9755,7 @@ int main(void)
         printf("Your score is: %d\n", curr_score);
         while(1){
             endGameState();//display end game state
-            if(*((pushButtonBase+3)>>3)%2 == 1){
+            if((*(pushButtonBase+3)>>3)%2 == 1){
                 *(pushButtonBase+3) = *(pushButtonBase+3);
                 clear_screen();
                 break;
