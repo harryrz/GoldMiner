@@ -9958,14 +9958,25 @@ void draw_hookTip(bool clear){ //draw a hook at the tip of the hook line
     int yLoc = hookInfo.hooktipY;
     int xLocPrev = hookInfo.hooktipXPrev;
     int yLocPrev = hookInfo.hooktipYPrev;
-    int x_change[15] = {0, 0, 0, 0, 0, -1, -2, -3, -4, -5, -6, -7, -8, -9, -10};
-    int y_change[15] = {1, 2, 3, 4, 5,  6,  7,  8,  9, 10,  9,  8,  7,  6,  5};
+    // int x_change[15] = {0, 0, 0, 0, 0, -1, -2, -3, -4, -5, -6, -7, -8, -9, -10};
+    // int y_change[15] = {1, 2, 3, 4, 5,  6,  7,  8,  9, 10,  9,  8,  7,  6,  5};
+    // if(clear == true){
+    //     for(int i=0; i<15; i++){
+    //         plot_pixel(xLocPrev+x_change[i], yLocPrev+y_change[i], 0x0000); //draw black to clear previous hook tip
+    //     }
+    // }else{
+    //     for(int i=0; i<15; i++){
+    //         plot_pixel(xLoc+x_change[i], yLoc+y_change[i], 0xdee5);
+    //     }
+    // }
+    int x_change[7] = {0, 0, 0, -1, -2, -3, -4};
+    int y_change[7] = {1, 2, 3, 4, 5, 4, 3};
     if(clear == true){
-        for(int i=0; i<15; i++){
+        for(int i=0; i<7; i++){
             plot_pixel(xLocPrev+x_change[i], yLocPrev+y_change[i], 0x0000); //draw black to clear previous hook tip
         }
     }else{
-        for(int i=0; i<15; i++){
+        for(int i=0; i<7; i++){
             plot_pixel(xLoc+x_change[i], yLoc+y_change[i], 0xdee5);
         }
     }
@@ -9974,7 +9985,7 @@ void draw_hookTip(bool clear){ //draw a hook at the tip of the hook line
 void extend_hook(){
     hookInfo.length = 35; // In case length of hook is modified elsewhere, change it back to 35
     int count = 0;
-        while(!detect_hook_on_object(hookInfo.hooktipX-5, hookInfo.hooktipY+10, hookInfo.slope)){ // no crystals detected at tip of hook
+        while(!detect_hook_on_object(hookInfo.hooktipX-2, hookInfo.hooktipY+5, hookInfo.slope)){ // no crystals detected at tip of hook
         
         draw_line_with_angle(160, 28, hookInfo.angle, hookInfo.length-1, true); //clear previous extended hook
         draw_hookTip(true); //clear previous hook tip
@@ -10190,7 +10201,12 @@ bool detect_hook_on_object(int hookx, int hooky, double slope){
             crystalx = newhookx;
             crystaly = newhooky;
         }
-   if(*check_pixel_address != 0x0000){ // The "Next" pixel of the current pixel is not black, indicating
+
+   //New code to test:
+   if(crystalx > 318 || crystalx < 1 || crystaly > 238){
+        return false;
+   } else {
+        if(*check_pixel_address != 0x0000){ // The "Next" pixel of the current pixel is not black, indicating
                                             // that a rock/gold has been reached.
             // Implement logic for searching for curRetrieveCrystal
             curRetrieveCrystal = identify_the_crystal(crystalx, crystaly);
@@ -10200,9 +10216,11 @@ bool detect_hook_on_object(int hookx, int hooky, double slope){
             printf("colour: %hd\n", curRetrieveCrystal->colour);
             //draw_box(crystalx, crystaly, 0x5fa0, 5)
             return true;
-   } else {
+        } else {
             return false;
+        }
    }
+   
 }
 
 void draw_retrieve_crystal_with_colour(short int colour){
