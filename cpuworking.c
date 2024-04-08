@@ -9751,10 +9751,10 @@ int main(void)
             pixel_buffer_start = *(pixel_ctrl_ptr + 1); // new back buffer
         }
         printf("Current Highest Score is: %d\n", max_score);
-        printf("Your score is: &d\n", curr_score);
+        printf("Your score is: %d\n", curr_score);
         while(1){
             endGameState();//display end game state
-            if(*(pushButtonBase+3)>>3%2==1){
+            if(*((pushButtonBase+3)>>3)%2 == 1){
                 *(pushButtonBase+3) = *(pushButtonBase+3);
                 clear_screen();
                 break;
@@ -9780,7 +9780,7 @@ void playGameState(struct Crystal ** crystalList, volatile int * pushButtonBase)
 
     if(*(pushButtonBase+3) == 0){ //hook keeps swings if user not clicking pushbutton
         draw_hook(pushButtonBase);
-    }else{ //push button clicked, extend hook
+    }else if((*pushButtonBase+3)%2==1){ //push button clicked, extend hook
         extend_hook();
 		*(pushButtonBase+3) = *(pushButtonBase+3); // reset edgecap bit
     }
@@ -9993,7 +9993,7 @@ void extend_hook(){
         draw_hookTip(false); //draw current hooktip
         hookInfo.length = hookInfo.length + 1;
         count++;
-        if(hookInfo.hooktipX-5>=319 || hookInfo.hooktipX-5<=0 || hookInfo.hooktipY+10>=238){ //if reaches end of screen bounds, retract
+        if(hookInfo.hooktipX+10>=319 || hookInfo.hooktipX-10<=0 || hookInfo.hooktipY+10>=238){ //if reaches end of screen bounds, retract
             life_amount--;
             retract_hook();
             return;
